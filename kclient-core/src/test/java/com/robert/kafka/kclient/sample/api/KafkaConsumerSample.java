@@ -2,10 +2,10 @@ package com.robert.kafka.kclient.sample.api;
 
 import java.io.IOException;
 
-import com.robert.kafka.kclient.core.KafkaConsumer;
+import com.robert.kafka.kclient.core.AdaKafkaConsumer;
 
 /**
- * Sample for use {@link KafkaConsumer} with Java API.
+ * Sample for use {@link AdaKafkaConsumer} with Java API.
  * 
  * @author Robert Lee
  * @since Aug 21, 2015
@@ -17,10 +17,9 @@ public class KafkaConsumerSample {
 	public static void main(String[] args) {
 		DogHandler mbe = new DogHandler();
 
-		KafkaConsumer kafkaConsumer = new KafkaConsumer(
-				"kafka-consumer.properties", "test", 1, mbe);
+		AdaKafkaConsumer adaKafkaConsumer = new AdaKafkaConsumer("kafka-consumer.properties", "test", 5, mbe);
 		try {
-			kafkaConsumer.startup();
+			adaKafkaConsumer.startup();
 
 			try {
 				System.in.read();
@@ -30,7 +29,7 @@ public class KafkaConsumerSample {
 			}
 		} finally {
 			System.out.println("Start to exit...");
-			kafkaConsumer.shutdownGracefully();
+			adaKafkaConsumer.shutdownGracefully();
 		}
 	}
 }

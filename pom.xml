@@ -10,6 +10,7 @@
 
 	<modules>
 		<module>kclient-core</module>
+		<module>kclient-processor</module>
 	</modules>
 
 </project>

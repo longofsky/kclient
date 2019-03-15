@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.robert.kafka.kclient.core.AdaKafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -19,8 +20,7 @@ import org.w3c.dom.Document;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.robert.kafka.kclient.core.KafkaConsumer;
-import com.robert.kafka.kclient.core.KafkaProducer;
+import com.robert.kafka.kclient.core.AdaKafkaConsumer;
 import com.robert.kafka.kclient.excephandler.ExceptionHandler;
 import com.robert.kafka.kclient.handlers.BeanMessageHandler;
 import com.robert.kafka.kclient.handlers.BeansMessageHandler;
@@ -182,33 +182,33 @@ public class KClientBoot implements ApplicationContextAware {
 		Class<? extends Object> paramClazz = kafkaHandlerMeta
 				.getParameterType();
 
-		KafkaProducer kafkaProducer = createProducer(kafkaHandlerMeta);
+		AdaKafkaProducer adaKafkaProducer = createProducer(kafkaHandlerMeta);
 		List<ExceptionHandler> excepHandlers = createExceptionHandlers(kafkaHandlerMeta);
 
 		MessageHandler beanMessageHandler = null;
 		if (paramClazz.isAssignableFrom(JSONObject.class)) {
 			beanMessageHandler = createObjectHandler(kafkaHandlerMeta,
-					kafkaProducer, excepHandlers);
+					adaKafkaProducer, excepHandlers);
 		} else if (paramClazz.isAssignableFrom(JSONArray.class)) {
 			beanMessageHandler = createObjectsHandler(kafkaHandlerMeta,
-					kafkaProducer, excepHandlers);
+					adaKafkaProducer, excepHandlers);
 		} else if (List.class.isAssignableFrom(Document.class)) {
 			beanMessageHandler = createDocumentHandler(kafkaHandlerMeta,
-					kafkaProducer, excepHandlers);
+					adaKafkaProducer, excepHandlers);
 		} else if (List.class.isAssignableFrom(paramClazz)) {
 			beanMessageHandler = createBeansHandler(kafkaHandlerMeta,
-					kafkaProducer, excepHandlers);
+					adaKafkaProducer, excepHandlers);
 		} else {
 			beanMessageHandler = createBeanHandler(kafkaHandlerMeta,
-					kafkaProducer, excepHandlers);
+					adaKafkaProducer, excepHandlers);
 		}
 
-		KafkaConsumer kafkaConsumer = createConsumer(kafkaHandlerMeta,
+		AdaKafkaConsumer adaKafkaConsumer = createConsumer(kafkaHandlerMeta,
 				beanMessageHandler);
-		kafkaConsumer.startup();
+		adaKafkaConsumer.startup();
 
-		KafkaHandler kafkaHandler = new KafkaHandler(kafkaConsumer,
-				kafkaProducer, excepHandlers, kafkaHandlerMeta);
+		KafkaHandler kafkaHandler = new KafkaHandler(adaKafkaConsumer,
+				adaKafkaProducer, excepHandlers, kafkaHandlerMeta);
 
 		kafkaHandlers.add(kafkaHandler);
 
@@ -273,14 +273,14 @@ public class KClientBoot implements ApplicationContextAware {
 
 	protected ObjectMessageHandler<JSONObject> createObjectHandler(
 			final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer,
+			final AdaKafkaProducer adaKafkaProducer,
 			List<ExceptionHandler> excepHandlers) {
 
 		ObjectMessageHandler<JSONObject> objectMessageHandler = new ObjectMessageHandler<JSONObject>(
 				excepHandlers) {
 			@Override
 			protected void doExecuteObject(JSONObject jsonObject) {
-				invokeHandler(kafkaHandlerMeta, kafkaProducer, jsonObject);
+				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, jsonObject);
 			}
 
 		};
@@ -290,14 +290,14 @@ public class KClientBoot implements ApplicationContextAware {
 
 	protected ObjectsMessageHandler<JSONArray> createObjectsHandler(
 			final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer,
+			final AdaKafkaProducer adaKafkaProducer,
 			List<ExceptionHandler> excepHandlers) {
 
 		ObjectsMessageHandler<JSONArray> objectMessageHandler = new ObjectsMessageHandler<JSONArray>(
 				excepHandlers) {
 			@Override
 			protected void doExecuteObjects(JSONArray jsonArray) {
-				invokeHandler(kafkaHandlerMeta, kafkaProducer, jsonArray);
+				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, jsonArray);
 			}
 		};
 
@@ -306,14 +306,14 @@ public class KClientBoot implements ApplicationContextAware {
 
 	protected DocumentMessageHandler createDocumentHandler(
 			final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer,
+			final AdaKafkaProducer adaKafkaProducer,
 			List<ExceptionHandler> excepHandlers) {
 
 		DocumentMessageHandler documentMessageHandler = new DocumentMessageHandler(
 				excepHandlers) {
 			@Override
 			protected void doExecuteDocument(Document document) {
-				invokeHandler(kafkaHandlerMeta, kafkaProducer, document);
+				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, document);
 			}
 		};
 
@@ -323,7 +323,7 @@ public class KClientBoot implements ApplicationContextAware {
 	@SuppressWarnings("unchecked")
 	protected BeanMessageHandler<Object> createBeanHandler(
 			final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer,
+			final AdaKafkaProducer adaKafkaProducer,
 			List<ExceptionHandler> excepHandlers) {
 
 		// We have to abandon the type check
@@ -332,7 +332,7 @@ public class KClientBoot implements ApplicationContextAware {
 				kafkaHandlerMeta.getParameterType(), excepHandlers) {
 			@Override
 			protected void doExecuteBean(Object bean) {
-				invokeHandler(kafkaHandlerMeta, kafkaProducer, bean);
+				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, bean);
 			}
 
 		};
@@ -343,7 +343,7 @@ public class KClientBoot implements ApplicationContextAware {
 	@SuppressWarnings("unchecked")
 	protected BeansMessageHandler<Object> createBeansHandler(
 			final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer,
+			final AdaKafkaProducer adaKafkaProducer,
 			List<ExceptionHandler> excepHandlers) {
 
 		// We have to abandon the type check
@@ -352,7 +352,7 @@ public class KClientBoot implements ApplicationContextAware {
 				kafkaHandlerMeta.getParameterType(), excepHandlers) {
 			@Override
 			protected void doExecuteBeans(List bean) {
-				invokeHandler(kafkaHandlerMeta, kafkaProducer, bean);
+				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, bean);
 			}
 
 		};
@@ -360,36 +360,36 @@ public class KClientBoot implements ApplicationContextAware {
 		return beanMessageHandler;
 	}
 
-	protected KafkaProducer createProducer(
+	protected AdaKafkaProducer createProducer(
 			final KafkaHandlerMeta kafkaHandlerMeta) {
-		KafkaProducer kafkaProducer = null;
+		AdaKafkaProducer adaKafkaProducer = null;
 
 		if (kafkaHandlerMeta.getOutputProducer() != null) {
-			kafkaProducer = new KafkaProducer(kafkaHandlerMeta
+			adaKafkaProducer = new AdaKafkaProducer(kafkaHandlerMeta
 					.getOutputProducer().propertiesFile(), kafkaHandlerMeta
 					.getOutputProducer().defaultTopic());
 		}
 
 		// It may return null
-		return kafkaProducer;
+		return adaKafkaProducer;
 	}
 
 	private void invokeHandler(final KafkaHandlerMeta kafkaHandlerMeta,
-			final KafkaProducer kafkaProducer, Object parameter) {
+							   final AdaKafkaProducer adaKafkaProducer, Object parameter) {
 		Method kafkaHandlerMethod = kafkaHandlerMeta.getMethod();
 		try {
 			Object result = kafkaHandlerMethod.invoke(
 					kafkaHandlerMeta.getBean(), parameter);
 
-			if (kafkaProducer != null) {
+			if (adaKafkaProducer != null) {
 				if (result instanceof JSONObject)
-					kafkaProducer.send(((JSONObject) result).toJSONString());
+					adaKafkaProducer.send(((JSONObject) result).toJSONString());
 				else if (result instanceof JSONArray)
-					kafkaProducer.send(((JSONArray) result).toJSONString());
+					adaKafkaProducer.send(((JSONArray) result).toJSONString());
 				else if (result instanceof Document)
-					kafkaProducer.send(((Document) result).getTextContent());
+					adaKafkaProducer.send(((Document) result).getTextContent());
 				else
-					kafkaProducer.send(JSON.toJSONString(result));
+					adaKafkaProducer.send(JSON.toJSONString(result));
 			}
 		} catch (IllegalAccessException e) {
 			// If annotated config is correct, this won't happen
@@ -415,13 +415,13 @@ public class KClientBoot implements ApplicationContextAware {
 		}
 	}
 
-	protected KafkaConsumer createConsumer(
+	protected AdaKafkaConsumer createConsumer(
 			final KafkaHandlerMeta kafkaHandlerMeta,
 			MessageHandler beanMessageHandler) {
-		KafkaConsumer kafkaConsumer = null;
+		AdaKafkaConsumer adaKafkaConsumer = null;
 
 		if (kafkaHandlerMeta.getInputConsumer().fixedThreadNum() > 0) {
-			kafkaConsumer = new KafkaConsumer(kafkaHandlerMeta
+			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
 					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
 					.getInputConsumer().topic(), kafkaHandlerMeta
 					.getInputConsumer().streamNum(), kafkaHandlerMeta
@@ -430,7 +430,7 @@ public class KClientBoot implements ApplicationContextAware {
 		} else if (kafkaHandlerMeta.getInputConsumer().maxThreadNum() > 0
 				&& kafkaHandlerMeta.getInputConsumer().minThreadNum() < kafkaHandlerMeta
 						.getInputConsumer().maxThreadNum()) {
-			kafkaConsumer = new KafkaConsumer(kafkaHandlerMeta
+			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
 					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
 					.getInputConsumer().topic(), kafkaHandlerMeta
 					.getInputConsumer().streamNum(), kafkaHandlerMeta
@@ -438,13 +438,13 @@ public class KClientBoot implements ApplicationContextAware {
 					.getInputConsumer().maxThreadNum(), beanMessageHandler);
 
 		} else {
-			kafkaConsumer = new KafkaConsumer(kafkaHandlerMeta
+			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
 					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
 					.getInputConsumer().topic(), kafkaHandlerMeta
 					.getInputConsumer().streamNum(), beanMessageHandler);
 		}
 
-		return kafkaConsumer;
+		return adaKafkaConsumer;
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext)
@@ -456,9 +456,9 @@ public class KClientBoot implements ApplicationContextAware {
 	// this method is not called
 	public void shutdownAll() {
 		for (KafkaHandler kafkahandler : kafkaHandlers) {
-			kafkahandler.getKafkaConsumer().shutdownGracefully();
+			kafkahandler.getAdaKafkaConsumer().shutdownGracefully();
 
-			kafkahandler.getKafkaProducer().close();
+			kafkahandler.getAdaKafkaProducer().close();
 		}
 	}
 

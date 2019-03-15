@@ -57,13 +57,13 @@ Java API提供了最直接，最简单的使用KClient的方法。
 *构建Producer示例：*
 
 ```java
-KafkaProducer kafkaProducer = new KafkaProducer("kafka-producer.properties", "test");
+KafkaProducer adaKafkaProducer = new KafkaProducer("kafka-producer.properties", "test");
 
 for (int i = 0; i < 10; i++) {
 	Dog dog = new Dog();
 	dog.setName("Yours " + i);
 	dog.setId(i);
-	kafkaProducer.sendBean2Topic("test", dog);
+	adaKafkaProducer.sendBean2Topic("test", dog);
 
 	System.out.format("Sending dog: %d \n", i + 1);
 
@@ -76,9 +76,9 @@ for (int i = 0; i < 10; i++) {
 ```java
 DogHandler mbe = new DogHandler();
 
-KafkaConsumer kafkaConsumer = new KafkaConsumer("kafka-consumer.properties", "test", 1, mbe);
+KafkaConsumer adaKafkaConsumer = new KafkaConsumer("kafka-consumer.properties", "test", 1, mbe);
 try {
-	kafkaConsumer.startup();
+	adaKafkaConsumer.startup();
 
 	try {
 		System.in.read();
@@ -86,7 +86,7 @@ try {
 		e.printStackTrace();
 	}
 } finally {
-	kafkaConsumer.shutdownGracefully();
+	adaKafkaConsumer.shutdownGracefully();
 }
  ```
  
@@ -111,13 +111,13 @@ KClient可以与Spring环境无缝集成，你可以像使用Spring Bean一样�
 ```java
 ApplicationContext ac = new ClassPathXmlApplicationContext("kafka-producer.xml");
 
-KafkaProducer kafkaProducer = (KafkaProducer) ac.getBean("producer");
+KafkaProducer adaKafkaProducer = (KafkaProducer) ac.getBean("producer");
 
 for (int i = 0; i < 10; i++) {
 	Dog dog = new Dog();
 	dog.setName("Yours " + i);
 	dog.setId(i);
-	kafkaProducer.send2Topic("test", JSON.toJSONString(dog));
+	adaKafkaProducer.send2Topic("test", JSON.toJSONString(dog));
 
 	System.out.format("Sending dog: %d \n", i + 1);
 
@@ -126,7 +126,7 @@ for (int i = 0; i < 10; i++) {
 ```
 
 ```xml
-<bean name="producer" class="com.robert.kafka.kclient.core.KafkaProducer" init-method="init">
+<bean name="producer" class="com.robert.kafka.kclient.core.AdaKafkaProducer" init-method="init">
 	<property name="propertiesFile" value="kafka-producer.properties"/>
 	<property name="defaultTopic" value="test"/>
 </bean>
@@ -138,9 +138,9 @@ for (int i = 0; i < 10; i++) {
 ApplicationContext ac = new ClassPathXmlApplicationContext(
 		"kafka-consumer.xml");
 
-KafkaConsumer kafkaConsumer = (KafkaConsumer) ac.getBean("consumer");
+KafkaConsumer adaKafkaConsumer = (KafkaConsumer) ac.getBean("consumer");
 try {
-	kafkaConsumer.startup();
+	adaKafkaConsumer.startup();
 
 	try {
 		System.in.read();
@@ -148,7 +148,7 @@ try {
 		e.printStackTrace();
 	}
 } finally {
-	kafkaConsumer.shutdownGracefully();
+	adaKafkaConsumer.shutdownGracefully();
 }
  ```
  
@@ -167,7 +167,7 @@ public class DogHandler extends BeanMessageHandler<Dog> {
 ```xml
 <bean name="dogHandler" class="com.robert.kafka.kclient.sample.api.DogHandler" />
 
-<bean name="consumer" class="com.robert.kafka.kclient.core.KafkaConsumer" init-method="init">
+<bean name="consumer" class="com.robert.kafka.kclient.core.AdaKafkaConsumer" init-method="init">
 	<property name="propertiesFile" value="kafka-consumer.properties" />
 	<property name="topic" value="test" />
 	<property name="streamNum" value="1" />

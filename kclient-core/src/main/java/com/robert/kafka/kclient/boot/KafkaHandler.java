@@ -2,8 +2,8 @@ package com.robert.kafka.kclient.boot;
 
 import java.util.List;
 
-import com.robert.kafka.kclient.core.KafkaConsumer;
-import com.robert.kafka.kclient.core.KafkaProducer;
+import com.robert.kafka.kclient.core.AdaKafkaConsumer;
+import com.robert.kafka.kclient.core.AdaKafkaProducer;
 import com.robert.kafka.kclient.excephandler.ExceptionHandler;
 
 /**
@@ -14,38 +14,38 @@ import com.robert.kafka.kclient.excephandler.ExceptionHandler;
  *
  */
 public class KafkaHandler {
-	private KafkaConsumer kafkaConsumer;
+	private AdaKafkaConsumer adaKafkaConsumer;
 
-	private KafkaProducer kafkaProducer;
+	private AdaKafkaProducer adaKafkaProducer;
 
 	private List<ExceptionHandler> excepHandlers;
 
 	private KafkaHandlerMeta kafkaHandlerMeta;
 
-	public KafkaHandler(KafkaConsumer kafkaConsumer,
-			KafkaProducer kafkaProducer, List<ExceptionHandler> excepHandlers,
-			KafkaHandlerMeta kafkaHandlerMeta) {
+	public KafkaHandler(AdaKafkaConsumer adaKafkaConsumer,
+						AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers,
+						KafkaHandlerMeta kafkaHandlerMeta) {
 		super();
-		this.kafkaConsumer = kafkaConsumer;
-		this.kafkaProducer = kafkaProducer;
+		this.adaKafkaConsumer = adaKafkaConsumer;
+		this.adaKafkaProducer = adaKafkaProducer;
 		this.excepHandlers = excepHandlers;
 		this.kafkaHandlerMeta = kafkaHandlerMeta;
 	}
 
-	public KafkaConsumer getKafkaConsumer() {
-		return kafkaConsumer;
+	public AdaKafkaConsumer getAdaKafkaConsumer() {
+		return adaKafkaConsumer;
 	}
 
-	public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
-		this.kafkaConsumer = kafkaConsumer;
+	public void setAdaKafkaConsumer(AdaKafkaConsumer adaKafkaConsumer) {
+		this.adaKafkaConsumer = adaKafkaConsumer;
 	}
 
-	public KafkaProducer getKafkaProducer() {
-		return kafkaProducer;
+	public AdaKafkaProducer getAdaKafkaProducer() {
+		return adaKafkaProducer;
 	}
 
-	public void setKafkaProducer(KafkaProducer kafkaProducer) {
-		this.kafkaProducer = kafkaProducer;
+	public void setAdaKafkaProducer(AdaKafkaProducer adaKafkaProducer) {
+		this.adaKafkaProducer = adaKafkaProducer;
 	}
 
 	public List<ExceptionHandler> getExcepHandlers() {

@@ -52,11 +52,11 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.robert" level="DEBUG">
+	<logger name="com.robert" level="INFO">
 		<appender-ref ref="biz.log" />
 	</logger>
 
-	<root level="DEBUG">
+	<root level="INFO">
 		<appender-ref ref="stdout.default" />
 		<appender-ref ref="all.log" />
 		<appender-ref ref="error.log" />

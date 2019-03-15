@@ -8,7 +8,7 @@
 
 	<bean name="dogHandler" class="com.robert.kafka.kclient.sample.api.DogHandler" />
 
-	<bean name="consumer" class="com.robert.kafka.kclient.core.KafkaConsumer" init-method="init">
+	<bean name="consumer" class="com.robert.kafka.kclient.core.AdaKafkaConsumer" init-method="init">
 		<property name="propertiesFile" value="kafka-consumer.properties" />
 		<property name="topic" value="test" />
 		<property name="streamNum" value="1" />

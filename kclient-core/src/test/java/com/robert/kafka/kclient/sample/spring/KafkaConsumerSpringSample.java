@@ -5,10 +5,10 @@ import java.io.IOException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.robert.kafka.kclient.core.KafkaConsumer;
+import com.robert.kafka.kclient.core.AdaKafkaConsumer;
 
 /**
- * Sample for use {@link KafkaConsumer} with Spring context.
+ * Sample for use {@link AdaKafkaConsumer} with Spring context.
  * 
  * @author Robert Lee
  * @since Aug 21, 2015
@@ -21,9 +21,9 @@ public class KafkaConsumerSpringSample {
 		ApplicationContext ac = new ClassPathXmlApplicationContext(
 				"kafka-consumer.xml");
 
-		KafkaConsumer kafkaConsumer = (KafkaConsumer) ac.getBean("consumer");
+		AdaKafkaConsumer adaKafkaConsumer = (AdaKafkaConsumer) ac.getBean("consumer");
 		try {
-			kafkaConsumer.startup();
+			adaKafkaConsumer.startup();
 
 			try {
 				System.in.read();
@@ -31,7 +31,7 @@ public class KafkaConsumerSpringSample {
 				e.printStackTrace();
 			}
 		} finally {
-			kafkaConsumer.shutdownGracefully();
+			adaKafkaConsumer.shutdownGracefully();
 		}
 	}
 }
