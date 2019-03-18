@@ -22,9 +22,7 @@ public class KafkaHandler {
 
 	private KafkaHandlerMeta kafkaHandlerMeta;
 
-	public KafkaHandler(AdaKafkaConsumer adaKafkaConsumer,
-						AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers,
-						KafkaHandlerMeta kafkaHandlerMeta) {
+	public KafkaHandler(AdaKafkaConsumer adaKafkaConsumer, AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers, KafkaHandlerMeta kafkaHandlerMeta) {
 		super();
 		this.adaKafkaConsumer = adaKafkaConsumer;
 		this.adaKafkaProducer = adaKafkaProducer;

@@ -2,8 +2,11 @@ package com.robert.kafka.kclient.messageExecuteHandle;
 
 import com.robert.kafka.kclient.core.AdaKafkaConsumer;
 import com.robert.kafka.kclient.handlers.MessageHandler;
+import com.robert.kafka.kclient.mainThreadEnum.MainThreadStatusEnum;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -17,15 +20,22 @@ import java.util.*;
  * @Date: 2019-03-15 15:10
  * @Version: 1.0
  */
-public class SyncMessageExecuteHandle extends AdaKafkaConsumer implements MessageExecuteHandle {
+public class SyncMessageExecuteHandle extends AbstractMessageExecuteHandle {
+
+    protected static Logger log = LoggerFactory.getLogger(SyncMessageExecuteHandle.class);
 
     /*
         控制偏移量提交
      */
     public Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>(16);
 
+    public SyncMessageExecuteHandle(String topic,MessageHandler handler) {
+        super(topic,handler);
+    }
+
+
     @Override
-    public void execute(KafkaConsumer<String, String> consumer, MessageHandler handler, Properties properties) {
+    public void execute() {
 
         // 消费者订阅的topic, 可同时订阅多个
         consumer.subscribe(Arrays.asList(properties.getProperty("ada.test.topic")),new HandleRebalance());
@@ -36,7 +46,7 @@ public class SyncMessageExecuteHandle extends AdaKafkaConsumer implements Messag
 
         try {
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Long.parseLong(properties.getProperty("ada.test.timeOut")));
+                ConsumerRecords<String, String> records = consumer.poll(timeOutLong);
 
                 for (ConsumerRecord<String, String> record : records) {
                     syncHandleMessage(record, handler);
@@ -75,6 +85,12 @@ public class SyncMessageExecuteHandle extends AdaKafkaConsumer implements Messag
     private void syncHandleMessage (ConsumerRecord<String, String> record,MessageHandler handler) {
 
         handler.execute(record.value());
+
+    }
+
+    @Override
+    public void initKafka(Properties properties) {
+        super.initKafka(properties);
 
     }
 

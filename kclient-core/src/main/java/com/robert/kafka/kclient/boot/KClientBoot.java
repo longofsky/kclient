@@ -59,9 +59,10 @@ public class KClientBoot implements ApplicationContextAware {
 	public void init() {
 		meta = getKafkaHandlerMeta();
 
-		if (meta.size() == 0)
+		if (meta.size() == 0) {
 			throw new IllegalArgumentException(
 					"No handler method is declared in this spring context.");
+		}
 
 		for (final KafkaHandlerMeta kafkaHandlerMeta : meta) {
 			createKafkaHandler(kafkaHandlerMeta);
@@ -71,13 +72,10 @@ public class KClientBoot implements ApplicationContextAware {
 	protected List<KafkaHandlerMeta> getKafkaHandlerMeta() {
 		List<KafkaHandlerMeta> meta = new ArrayList<KafkaHandlerMeta>();
 
-		String[] kafkaHandlerBeanNames = applicationContext
-				.getBeanNamesForAnnotation(KafkaHandlers.class);
+		String[] kafkaHandlerBeanNames = applicationContext.getBeanNamesForAnnotation(KafkaHandlers.class);
 		for (String kafkaHandlerBeanName : kafkaHandlerBeanNames) {
-			Object kafkaHandlerBean = applicationContext
-					.getBean(kafkaHandlerBeanName);
-			Class<? extends Object> kafkaHandlerBeanClazz = kafkaHandlerBean
-					.getClass();
+			Object kafkaHandlerBean = applicationContext.getBean(kafkaHandlerBeanName);
+			Class<? extends Object> kafkaHandlerBeanClazz = kafkaHandlerBean.getClass();
 			Map<Class<? extends Annotation>, Map<Method, Annotation>> mapData = extractAnnotationMaps(kafkaHandlerBeanClazz);
 
 			meta.addAll(convertAnnotationMaps2Meta(mapData, kafkaHandlerBean));
@@ -86,56 +84,39 @@ public class KClientBoot implements ApplicationContextAware {
 		return meta;
 	}
 
-	protected Map<Class<? extends Annotation>, Map<Method, Annotation>> extractAnnotationMaps(
-			Class<? extends Object> clazz) {
-		AnnotationTranversor<Class<? extends Annotation>, Method, Annotation> annotationTranversor = new AnnotationTranversor<Class<? extends Annotation>, Method, Annotation>(
-				clazz);
+	protected Map<Class<? extends Annotation>, Map<Method, Annotation>> extractAnnotationMaps(Class<? extends Object> clazz) {
+		AnnotationTranversor<Class<? extends Annotation>, Method, Annotation> annotationTranversor = new AnnotationTranversor<Class<? extends Annotation>, Method, Annotation>(clazz);
 
-		Map<Class<? extends Annotation>, Map<Method, Annotation>> data = annotationTranversor
-				.tranverseAnnotation(new AnnotationHandler<Class<? extends Annotation>, Method, Annotation>() {
+		Map<Class<? extends Annotation>, Map<Method, Annotation>> data = annotationTranversor.tranverseAnnotation(new AnnotationHandler<Class<? extends Annotation>, Method, Annotation>() {
 
-					public void handleMethodAnnotation(
-							Class<? extends Object> clazz,
-							Method method,
-							Annotation annotation,
-							TranversorContext<Class<? extends Annotation>, Method, Annotation> context) {
-						if (annotation instanceof InputConsumer)
-							context.addEntry(InputConsumer.class, method,
-									annotation);
-						else if (annotation instanceof OutputProducer)
-							context.addEntry(OutputProducer.class, method,
-									annotation);
-						else if (annotation instanceof ErrorHandler)
-							context.addEntry(ErrorHandler.class, method,
-									annotation);
+					public void handleMethodAnnotation(Class<? extends Object> clazz, Method method, Annotation annotation, TranversorContext<Class<? extends Annotation>, Method, Annotation> context) {
+						if (annotation instanceof InputConsumer) {
+							context.addEntry(InputConsumer.class, method, annotation);
+						}
+						else if (annotation instanceof OutputProducer) {
+							context.addEntry(OutputProducer.class, method, annotation);
+						}
+						else if (annotation instanceof ErrorHandler) {
+							context.addEntry(ErrorHandler.class, method, annotation);
+						}
 					}
 
-					public void handleClassAnnotation(
-							Class<? extends Object> clazz,
-							Annotation annotation,
-							TranversorContext<Class<? extends Annotation>, Method, Annotation> context) {
-						if (annotation instanceof KafkaHandlers)
-							log.warn(
-									"There is some other annotation {} rather than @KafkaHandlers in the handler class {}.",
-									annotation.getClass().getName(),
-									clazz.getName());
+					public void handleClassAnnotation(Class<? extends Object> clazz, Annotation annotation, TranversorContext<Class<? extends Annotation>, Method, Annotation> context) {
+						if (annotation instanceof KafkaHandlers) {
+							log.warn("There is some other annotation {} rather than @KafkaHandlers in the handler class {}.", annotation.getClass().getName(), clazz.getName());
+						}
 					}
 				});
 
 		return data;
 	}
 
-	protected List<KafkaHandlerMeta> convertAnnotationMaps2Meta(
-			Map<Class<? extends Annotation>, Map<Method, Annotation>> mapData,
-			Object bean) {
+	protected List<KafkaHandlerMeta> convertAnnotationMaps2Meta(Map<Class<? extends Annotation>, Map<Method, Annotation>> mapData, Object bean) {
 		List<KafkaHandlerMeta> meta = new ArrayList<KafkaHandlerMeta>();
 
-		Map<Method, Annotation> inputConsumerMap = mapData
-				.get(InputConsumer.class);
-		Map<Method, Annotation> outputProducerMap = mapData
-				.get(OutputProducer.class);
-		Map<Method, Annotation> exceptionHandlerMap = mapData
-				.get(ErrorHandler.class);
+		Map<Method, Annotation> inputConsumerMap = mapData.get(InputConsumer.class);
+		Map<Method, Annotation> outputProducerMap = mapData.get(OutputProducer.class);
+		Map<Method, Annotation> exceptionHandlerMap = mapData.get(ErrorHandler.class);
 
 		for (Map.Entry<Method, Annotation> entry : inputConsumerMap.entrySet()) {
 			InputConsumer inputConsumer = (InputConsumer) entry.getValue();
@@ -146,31 +127,27 @@ public class KClientBoot implements ApplicationContextAware {
 			kafkaHandlerMeta.setMethod(entry.getKey());
 
 			Parameter[] kafkaHandlerParameters = entry.getKey().getParameters();
-			if (kafkaHandlerParameters.length != 1)
+			if (kafkaHandlerParameters.length != 1) {
 				throw new IllegalArgumentException(
 						"The kafka handler method can contains only one parameter.");
-			kafkaHandlerMeta.setParameterType(kafkaHandlerParameters[0]
-					.getType());
+			}
+			kafkaHandlerMeta.setParameterType(kafkaHandlerParameters[0].getType());
+
 
 			kafkaHandlerMeta.setInputConsumer(inputConsumer);
 
-			if (outputProducerMap != null
-					&& outputProducerMap.containsKey(entry.getKey()))
-				kafkaHandlerMeta
-						.setOutputProducer((OutputProducer) outputProducerMap
-								.get(entry.getKey()));
+			if (outputProducerMap != null && outputProducerMap.containsKey(entry.getKey())) {
+				kafkaHandlerMeta.setOutputProducer((OutputProducer) outputProducerMap.get(entry.getKey()));
+			}
 
-			if (exceptionHandlerMap != null)
-				for (Map.Entry<Method, Annotation> excepHandlerEntry : exceptionHandlerMap
-						.entrySet()) {
-					ErrorHandler eh = (ErrorHandler) excepHandlerEntry
-							.getValue();
-					if (StringUtils.isEmpty(eh.topic())
-							|| eh.topic().equals(inputConsumer.topic())) {
-						kafkaHandlerMeta.addErrorHandlers((ErrorHandler) eh,
-								excepHandlerEntry.getKey());
+			if (exceptionHandlerMap != null) {
+				for (Map.Entry<Method, Annotation> excepHandlerEntry : exceptionHandlerMap.entrySet()) {
+					ErrorHandler eh = (ErrorHandler) excepHandlerEntry.getValue();
+					if (StringUtils.isEmpty(eh.topic()) || eh.topic().equals(inputConsumer.topic())) {
+						kafkaHandlerMeta.addErrorHandlers((ErrorHandler) eh, excepHandlerEntry.getKey());
 					}
 				}
+			}
 
 			meta.add(kafkaHandlerMeta);
 		}
@@ -179,28 +156,22 @@ public class KClientBoot implements ApplicationContextAware {
 	}
 
 	protected void createKafkaHandler(final KafkaHandlerMeta kafkaHandlerMeta) {
-		Class<? extends Object> paramClazz = kafkaHandlerMeta
-				.getParameterType();
+		Class<? extends Object> paramClazz = kafkaHandlerMeta.getParameterType();
 
 		AdaKafkaProducer adaKafkaProducer = createProducer(kafkaHandlerMeta);
 		List<ExceptionHandler> excepHandlers = createExceptionHandlers(kafkaHandlerMeta);
 
 		MessageHandler beanMessageHandler = null;
 		if (paramClazz.isAssignableFrom(JSONObject.class)) {
-			beanMessageHandler = createObjectHandler(kafkaHandlerMeta,
-					adaKafkaProducer, excepHandlers);
+			beanMessageHandler = createObjectHandler(kafkaHandlerMeta, adaKafkaProducer, excepHandlers);
 		} else if (paramClazz.isAssignableFrom(JSONArray.class)) {
-			beanMessageHandler = createObjectsHandler(kafkaHandlerMeta,
-					adaKafkaProducer, excepHandlers);
+			beanMessageHandler = createObjectsHandler(kafkaHandlerMeta, adaKafkaProducer, excepHandlers);
 		} else if (List.class.isAssignableFrom(Document.class)) {
-			beanMessageHandler = createDocumentHandler(kafkaHandlerMeta,
-					adaKafkaProducer, excepHandlers);
+			beanMessageHandler = createDocumentHandler(kafkaHandlerMeta, adaKafkaProducer, excepHandlers);
 		} else if (List.class.isAssignableFrom(paramClazz)) {
-			beanMessageHandler = createBeansHandler(kafkaHandlerMeta,
-					adaKafkaProducer, excepHandlers);
+			beanMessageHandler = createBeansHandler(kafkaHandlerMeta, adaKafkaProducer, excepHandlers);
 		} else {
-			beanMessageHandler = createBeanHandler(kafkaHandlerMeta,
-					adaKafkaProducer, excepHandlers);
+			beanMessageHandler = createBeanHandler(kafkaHandlerMeta, adaKafkaProducer, excepHandlers);
 		}
 
 		AdaKafkaConsumer adaKafkaConsumer = createConsumer(kafkaHandlerMeta,
@@ -214,12 +185,10 @@ public class KClientBoot implements ApplicationContextAware {
 
 	}
 
-	private List<ExceptionHandler> createExceptionHandlers(
-			final KafkaHandlerMeta kafkaHandlerMeta) {
+	private List<ExceptionHandler> createExceptionHandlers(final KafkaHandlerMeta kafkaHandlerMeta) {
 		List<ExceptionHandler> excepHandlers = new ArrayList<ExceptionHandler>();
 
-		for (final Map.Entry<ErrorHandler, Method> errorHandler : kafkaHandlerMeta
-				.getErrorHandlers().entrySet()) {
+		for (final Map.Entry<ErrorHandler, Method> errorHandler : kafkaHandlerMeta.getErrorHandlers().entrySet()) {
 			ExceptionHandler exceptionHandler = new ExceptionHandler() {
 				public boolean support(Throwable t) {
 					// We handle the exception when the classes are exactly same
@@ -271,13 +240,9 @@ public class KClientBoot implements ApplicationContextAware {
 		return excepHandlers;
 	}
 
-	protected ObjectMessageHandler<JSONObject> createObjectHandler(
-			final KafkaHandlerMeta kafkaHandlerMeta,
-			final AdaKafkaProducer adaKafkaProducer,
-			List<ExceptionHandler> excepHandlers) {
+	protected ObjectMessageHandler<JSONObject> createObjectHandler(final KafkaHandlerMeta kafkaHandlerMeta, final AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers) {
 
-		ObjectMessageHandler<JSONObject> objectMessageHandler = new ObjectMessageHandler<JSONObject>(
-				excepHandlers) {
+		ObjectMessageHandler<JSONObject> objectMessageHandler = new ObjectMessageHandler<JSONObject>(excepHandlers) {
 			@Override
 			protected void doExecuteObject(JSONObject jsonObject) {
 				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, jsonObject);
@@ -288,13 +253,9 @@ public class KClientBoot implements ApplicationContextAware {
 		return objectMessageHandler;
 	}
 
-	protected ObjectsMessageHandler<JSONArray> createObjectsHandler(
-			final KafkaHandlerMeta kafkaHandlerMeta,
-			final AdaKafkaProducer adaKafkaProducer,
-			List<ExceptionHandler> excepHandlers) {
+	protected ObjectsMessageHandler<JSONArray> createObjectsHandler(final KafkaHandlerMeta kafkaHandlerMeta, final AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers) {
 
-		ObjectsMessageHandler<JSONArray> objectMessageHandler = new ObjectsMessageHandler<JSONArray>(
-				excepHandlers) {
+		ObjectsMessageHandler<JSONArray> objectMessageHandler = new ObjectsMessageHandler<JSONArray>(excepHandlers) {
 			@Override
 			protected void doExecuteObjects(JSONArray jsonArray) {
 				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, jsonArray);
@@ -304,13 +265,9 @@ public class KClientBoot implements ApplicationContextAware {
 		return objectMessageHandler;
 	}
 
-	protected DocumentMessageHandler createDocumentHandler(
-			final KafkaHandlerMeta kafkaHandlerMeta,
-			final AdaKafkaProducer adaKafkaProducer,
-			List<ExceptionHandler> excepHandlers) {
+	protected DocumentMessageHandler createDocumentHandler(final KafkaHandlerMeta kafkaHandlerMeta, final AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers) {
 
-		DocumentMessageHandler documentMessageHandler = new DocumentMessageHandler(
-				excepHandlers) {
+		DocumentMessageHandler documentMessageHandler = new DocumentMessageHandler(excepHandlers) {
 			@Override
 			protected void doExecuteDocument(Document document) {
 				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, document);
@@ -341,15 +298,11 @@ public class KClientBoot implements ApplicationContextAware {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected BeansMessageHandler<Object> createBeansHandler(
-			final KafkaHandlerMeta kafkaHandlerMeta,
-			final AdaKafkaProducer adaKafkaProducer,
-			List<ExceptionHandler> excepHandlers) {
+	protected BeansMessageHandler<Object> createBeansHandler(final KafkaHandlerMeta kafkaHandlerMeta, final AdaKafkaProducer adaKafkaProducer, List<ExceptionHandler> excepHandlers) {
 
 		// We have to abandon the type check
 		@SuppressWarnings("rawtypes")
-		BeansMessageHandler beanMessageHandler = new BeansMessageHandler(
-				kafkaHandlerMeta.getParameterType(), excepHandlers) {
+		BeansMessageHandler beanMessageHandler = new BeansMessageHandler(kafkaHandlerMeta.getParameterType(), excepHandlers) {
 			@Override
 			protected void doExecuteBeans(List bean) {
 				invokeHandler(kafkaHandlerMeta, adaKafkaProducer, bean);
@@ -360,14 +313,11 @@ public class KClientBoot implements ApplicationContextAware {
 		return beanMessageHandler;
 	}
 
-	protected AdaKafkaProducer createProducer(
-			final KafkaHandlerMeta kafkaHandlerMeta) {
+	protected AdaKafkaProducer createProducer(final KafkaHandlerMeta kafkaHandlerMeta) {
 		AdaKafkaProducer adaKafkaProducer = null;
 
 		if (kafkaHandlerMeta.getOutputProducer() != null) {
-			adaKafkaProducer = new AdaKafkaProducer(kafkaHandlerMeta
-					.getOutputProducer().propertiesFile(), kafkaHandlerMeta
-					.getOutputProducer().defaultTopic());
+			adaKafkaProducer = new AdaKafkaProducer(kafkaHandlerMeta.getOutputProducer().propertiesFile(), kafkaHandlerMeta.getOutputProducer().defaultTopic());
 		}
 
 		// It may return null
@@ -382,21 +332,23 @@ public class KClientBoot implements ApplicationContextAware {
 					kafkaHandlerMeta.getBean(), parameter);
 
 			if (adaKafkaProducer != null) {
-				if (result instanceof JSONObject)
+				if (result instanceof JSONObject) {
 					adaKafkaProducer.send(((JSONObject) result).toJSONString());
-				else if (result instanceof JSONArray)
+				}
+				else if (result instanceof JSONArray) {
 					adaKafkaProducer.send(((JSONArray) result).toJSONString());
-				else if (result instanceof Document)
+				}
+				else if (result instanceof Document) {
 					adaKafkaProducer.send(((Document) result).getTextContent());
-				else
+				}
+				else {
 					adaKafkaProducer.send(JSON.toJSONString(result));
+				}
 			}
 		} catch (IllegalAccessException e) {
 			// If annotated config is correct, this won't happen
 			log.error("No permission to access the annotated kafka handler.", e);
-			throw new IllegalStateException(
-					"No permission to access the annotated kafka handler. Please check annotated config.",
-					e);
+			throw new IllegalStateException("No permission to access the annotated kafka handler. Please check annotated config.", e);
 		} catch (IllegalArgumentException e) {
 			// If annotated config is correct, this won't happen
 			log.error(
@@ -409,46 +361,27 @@ public class KClientBoot implements ApplicationContextAware {
 			// The SafeMessageHanlder has already handled the
 			// throwable, no more exception goes here
 			log.error("Failed to call the annotated kafka handler.", e);
-			throw new IllegalStateException(
-					"Failed to call the annotated kafka handler. Please check if the handler can handle the biz without any exception.",
-					e);
+			throw new IllegalStateException("Failed to call the annotated kafka handler. Please check if the handler can handle the biz without any exception.", e);
 		}
 	}
 
-	protected AdaKafkaConsumer createConsumer(
-			final KafkaHandlerMeta kafkaHandlerMeta,
-			MessageHandler beanMessageHandler) {
+	protected AdaKafkaConsumer createConsumer(final KafkaHandlerMeta kafkaHandlerMeta, MessageHandler beanMessageHandler) {
 		AdaKafkaConsumer adaKafkaConsumer = null;
 
 		if (kafkaHandlerMeta.getInputConsumer().fixedThreadNum() > 0) {
-			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
-					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
-					.getInputConsumer().topic(), kafkaHandlerMeta
-					.getInputConsumer().streamNum(), kafkaHandlerMeta
-					.getInputConsumer().fixedThreadNum(), beanMessageHandler);
+//			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta.getInputConsumer().propertiesFile(), kafkaHandlerMeta.getInputConsumer().topic(), kafkaHandlerMeta.getInputConsumer().streamNum(), kafkaHandlerMeta.getInputConsumer().fixedThreadNum(), beanMessageHandler);
 
-		} else if (kafkaHandlerMeta.getInputConsumer().maxThreadNum() > 0
-				&& kafkaHandlerMeta.getInputConsumer().minThreadNum() < kafkaHandlerMeta
-						.getInputConsumer().maxThreadNum()) {
-			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
-					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
-					.getInputConsumer().topic(), kafkaHandlerMeta
-					.getInputConsumer().streamNum(), kafkaHandlerMeta
-					.getInputConsumer().minThreadNum(), kafkaHandlerMeta
-					.getInputConsumer().maxThreadNum(), beanMessageHandler);
+		} else if (kafkaHandlerMeta.getInputConsumer().maxThreadNum() > 0 && kafkaHandlerMeta.getInputConsumer().minThreadNum() < kafkaHandlerMeta.getInputConsumer().maxThreadNum()) {
+//			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta.getInputConsumer().propertiesFile(), kafkaHandlerMeta.getInputConsumer().topic(), kafkaHandlerMeta.getInputConsumer().streamNum(), kafkaHandlerMeta.getInputConsumer().minThreadNum(), kafkaHandlerMeta.getInputConsumer().maxThreadNum(), beanMessageHandler);
 
 		} else {
-			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta
-					.getInputConsumer().propertiesFile(), kafkaHandlerMeta
-					.getInputConsumer().topic(), kafkaHandlerMeta
-					.getInputConsumer().streamNum(), beanMessageHandler);
+//			adaKafkaConsumer = new AdaKafkaConsumer(kafkaHandlerMeta.getInputConsumer().propertiesFile(), kafkaHandlerMeta.getInputConsumer().topic(), kafkaHandlerMeta.getInputConsumer().streamNum(), beanMessageHandler);
 		}
 
 		return adaKafkaConsumer;
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

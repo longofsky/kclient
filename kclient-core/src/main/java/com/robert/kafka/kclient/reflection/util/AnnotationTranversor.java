@@ -26,8 +26,7 @@ public class AnnotationTranversor<C, K, V> {
 		this.clazz = clazz;
 	}
 
-	public Map<C, Map<K, V>> tranverseAnnotation(
-			AnnotationHandler<C, K, V> annotationHandler) {
+	public Map<C, Map<K, V>> tranverseAnnotation(AnnotationHandler<C, K, V> annotationHandler) {
 		TranversorContext<C, K, V> ctx = new TranversorContext<C, K, V>();
 
 		for (Annotation annotation : clazz.getAnnotations()) {

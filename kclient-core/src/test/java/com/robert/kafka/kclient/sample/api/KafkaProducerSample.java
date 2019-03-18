@@ -2,6 +2,9 @@ package com.robert.kafka.kclient.sample.api;
 
 import com.robert.kafka.kclient.core.AdaKafkaProducer;
 import com.robert.kafka.kclient.sample.domain.Dog;
+import org.apache.kafka.clients.producer.RecordMetadata;
+
+import java.util.concurrent.Future;
 
 /**
  * Sample for use {@link AdaKafkaProducer} with Java API.
@@ -20,9 +23,9 @@ public class KafkaProducerSample {
 			Dog dog = new Dog();
 			dog.setName("Yours " + i);
 			dog.setId(i);
-			adaKafkaProducer.sendBean2Topic("test", dog);
+			Future<RecordMetadata> future =  adaKafkaProducer.sendBean2Topic("test", dog);
 
-			System.out.format("Sending dog: %d \n", i + 1);
+			System.out.format(future.toString()+"++++++++++Sending dog: %d \n", i + 1);
 
 			Thread.sleep(100);
 		}

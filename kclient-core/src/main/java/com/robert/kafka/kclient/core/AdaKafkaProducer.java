@@ -1,18 +1,14 @@
 package com.robert.kafka.kclient.core;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-
+import com.robert.kafka.kclient.callback.ProducerCallBack;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,23 +17,19 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * This is a producer client which can be used to send the message or the pair
- * of key and message.
- * 
- * It can be used to send one message once or multiple messages once. When
- * multiple messages, it will send only 20 messages in one batch.
- * 
- * @author Robert Lee
- * @since Aug 21, 2015
- *
+ * @Description
+ * @Author litianlong
+ * @Version 1.0
+ * @Param
+ * @Return
+ * @Exception
+ * @Date 2019-03-18 18:35
  */
 public class AdaKafkaProducer {
 	protected static Logger log = LoggerFactory.getLogger(AdaKafkaProducer.class);
 
-	// If the number of one batch is over 20, use 20 instead
-	protected static int MULTI_MSG_ONCE_SEND_NUM = 20;
 
-	private Producer<String, String> producer;
+	private KafkaProducer<String, String> producer;
 
 	private String defaultTopic;
 
@@ -76,192 +68,117 @@ public class AdaKafkaProducer {
 		}
 		log.info("Producer properties:" + properties);
 
-		ProducerConfig config = new ProducerConfig(properties);
-		producer = new Producer<String, String>(config);
+		producer = new KafkaProducer(properties);
 	}
 
-	// send string message
+	/*
+	 发送string message
+	 */
 
-	public void send(String message) {
-		send2Topic(null, message);
-	}
+	public Future<RecordMetadata> send2Topic(String topic, Integer partition, Long timestamp, String key, String value, Iterable<Header> headers) {
 
-	public void send2Topic(String topicName, String message) {
-		if (message == null) {
-			return;
+		if (value == null) {
+			return null;
 		}
 
-		if (topicName == null)
-			topicName = defaultTopic;
-
-		KeyedMessage<String, String> km = new KeyedMessage<String, String>(
-				topicName, message);
-		producer.send(km);
-	}
-
-	public void send(String key, String message) {
-		send2Topic(null, key, message);
-	}
-
-	public void send2Topic(String topicName, String key, String message) {
-		if (message == null) {
-			return;
+		if (topic == null) {
+			topic = defaultTopic;
 		}
 
-		if (topicName == null)
-			topicName = defaultTopic;
+		ProducerRecord record = new ProducerRecord<String,String>(topic,partition,timestamp, key, value,headers);
 
-		KeyedMessage<String, String> km = new KeyedMessage<String, String>(
-				topicName, key, message);
-		producer.send(km);
+		return producer.send(record,new ProducerCallBack());
+
 	}
 
-	public void send(Collection<String> messages) {
-		send2Topic(null, messages);
+	public Future<RecordMetadata> send(String message) {
+
+		return send(null,null,null, message);
+	}
+	public Future<RecordMetadata> send(String topic,String message) {
+
+		return send(topic,null,null, message);
+	}
+	public Future<RecordMetadata> send(Integer partition,String message) {
+
+		return send(null,partition,null, message);
 	}
 
-	public void send2Topic(String topicName, Collection<String> messages) {
-		if (messages == null || messages.isEmpty()) {
-			return;
-		}
+	public Future<RecordMetadata> send(String topic, Integer partition,String message) {
 
-		if (topicName == null)
-			topicName = defaultTopic;
+		return send(topic,partition,null, message);
+	}
+	public Future<RecordMetadata> send(String topic, String key,String message) {
 
-		List<KeyedMessage<String, String>> kms = new ArrayList<KeyedMessage<String, String>>();
-		int i = 0;
-		for (String entry : messages) {
-			KeyedMessage<String, String> km = new KeyedMessage<String, String>(
-					topicName, entry);
-			kms.add(km);
-			i++;
-			// Send the messages 20 at most once
-			if (i % MULTI_MSG_ONCE_SEND_NUM == 0) {
-				producer.send(kms);
-				kms.clear();
-			}
-		}
+		return send(topic,null,key, message);
+	}
+	public Future<RecordMetadata> send(String topic, Integer partition, String key,String message) {
 
-		if (!kms.isEmpty()) {
-			producer.send(kms);
-		}
+		return send(topic,partition,null,key, message);
+	}
+	public Future<RecordMetadata> send(String topic, Integer partition, Long timestamp, String key,String message) {
+
+		return send2Topic(topic,partition,timestamp,key, message,null);
 	}
 
-	public void send(Map<String, String> messages) {
-		send2Topic(null, messages);
+	/*
+	  发送bean message
+	 */
+
+	public <T> Future<RecordMetadata> sendBean(T bean) {
+		return sendBean2Topic(null, bean);
 	}
 
-	public void send2Topic(String topicName, Map<String, String> messages) {
-		if (messages == null || messages.isEmpty()) {
-			return;
-		}
-
-		if (topicName == null)
-			topicName = defaultTopic;
-
-		List<KeyedMessage<String, String>> kms = new ArrayList<KeyedMessage<String, String>>();
-
-		int i = 0;
-		for (Entry<String, String> entry : messages.entrySet()) {
-			KeyedMessage<String, String> km = new KeyedMessage<String, String>(
-					topicName, entry.getKey(), entry.getValue());
-			kms.add(km);
-			i++;
-			// Send the messages 20 at most once
-			if (i % MULTI_MSG_ONCE_SEND_NUM == 0) {
-				producer.send(kms);
-				kms.clear();
-			}
-		}
-
-		if (!kms.isEmpty()) {
-			producer.send(kms);
-		}
+	public <T> Future<RecordMetadata> sendBean2Topic(String topicName, T bean) {
+		return sendBean2Topic(topicName,null,null, bean);
 	}
 
-	// send bean message
-
-	public <T> void sendBean(T bean) {
-		sendBean2Topic(null, bean);
+	public <T> Future<RecordMetadata> sendBean(String key, T bean) {
+		return sendBean2Topic(null,null, key, bean);
+	}
+	public <T> Future<RecordMetadata> sendBean(Integer partition, T bean) {
+		return sendBean2Topic(null,partition, null, bean);
 	}
 
-	public <T> void sendBean2Topic(String topicName, T bean) {
-		send2Topic(topicName, JSON.toJSONString(bean));
+	public <T> Future<RecordMetadata> sendBean2Topic(String topicName, Integer partition, T bean) {
+		return sendBean2Topic(topicName,partition, null,bean);
 	}
 
-	public <T> void sendBean(String key, T bean) {
-		sendBean2Topic(null, key, bean);
+	public <T> Future<RecordMetadata> sendBean2Topic(String topicName, Integer partition, String key, T bean) {
+		return send(topicName,partition, key, JSON.toJSONString(bean));
 	}
 
-	public <T> void sendBean2Topic(String topicName, String key, T bean) {
-		send2Topic(topicName, key, JSON.toJSONString(bean));
+
+	/*
+	  发送JSON Object message
+	 */
+
+	public Future<RecordMetadata> sendObject(JSONObject jsonObject) {
+		return sendObject2Topic(null, jsonObject);
 	}
 
-	public <T> void sendBeans(Collection<T> beans) {
-		sendBeans2Topic(null, beans);
+	public Future<RecordMetadata> sendObject2Topic(String topicName, JSONObject jsonObject) {
+		return sendObject2Topic(topicName,null,null, jsonObject);
 	}
 
-	public <T> void sendBeans2Topic(String topicName, Collection<T> beans) {
-		Collection<String> beanStrs = new ArrayList<String>();
-		for (T bean : beans) {
-			beanStrs.add(JSON.toJSONString(bean));
-		}
-
-		send2Topic(topicName, beanStrs);
+	public Future<RecordMetadata> sendObject(String key, JSONObject jsonObject) {
+		return sendObject2Topic(null,null, key, jsonObject);
 	}
 
-	public <T> void sendBeans(Map<String, T> beans) {
-		sendBeans2Topic(null, beans);
+	public Future<RecordMetadata> sendObject(Integer partition, JSONObject jsonObject) {
+		return sendObject2Topic(null,partition, null, jsonObject);
 	}
 
-	public <T> void sendBeans2Topic(String topicName, Map<String, T> beans) {
-		Map<String, String> beansStr = new HashMap<String, String>();
-		for (Map.Entry<String, T> entry : beans.entrySet()) {
-			beansStr.put(entry.getKey(), JSON.toJSONString(entry.getValue()));
-		}
-
-		send2Topic(topicName, beansStr);
+	public Future<RecordMetadata> sendObject2Topic(String topicName, Integer partition, String key, JSONObject jsonObject) {
+		return send(topicName,partition, key,jsonObject.toJSONString());
 	}
 
-	// send JSON Object message
-
-	public void sendObject(JSONObject jsonObject) {
-		sendObject2Topic(null, jsonObject);
+	public Future<RecordMetadata> sendObjects(JSONArray jsonArray) {
+		return sendObjects2Topic(null, jsonArray);
 	}
 
-	public void sendObject2Topic(String topicName, JSONObject jsonObject) {
-		send2Topic(topicName, jsonObject.toJSONString());
-	}
-
-	public void sendObject(String key, JSONObject jsonObject) {
-		sendObject2Topic(null, key, jsonObject);
-	}
-
-	public void sendObject2Topic(String topicName, String key,
-			JSONObject jsonObject) {
-		send2Topic(topicName, key, jsonObject.toJSONString());
-	}
-
-	public void sendObjects(JSONArray jsonArray) {
-		sendObjects2Topic(null, jsonArray);
-	}
-
-	public void sendObjects2Topic(String topicName, JSONArray jsonArray) {
-		send2Topic(topicName, jsonArray.toJSONString());
-	}
-
-	public void sendObjects(Map<String, JSONObject> jsonObjects) {
-		sendObjects2Topic(null, jsonObjects);
-	}
-
-	public void sendObjects2Topic(String topicName,
-			Map<String, JSONObject> jsonObjects) {
-		Map<String, String> objectsStrs = new HashMap<String, String>();
-		for (Map.Entry<String, JSONObject> entry : jsonObjects.entrySet()) {
-			objectsStrs.put(entry.getKey(), entry.getValue().toJSONString());
-		}
-
-		send2Topic(topicName, objectsStrs);
+	public Future<RecordMetadata> sendObjects2Topic(String topicName, JSONArray jsonArray) {
+		return send(topicName, jsonArray.toJSONString());
 	}
 
 	public void close() {

@@ -3,6 +3,9 @@ package com.robert.kafka.kclient.sample.api;
 import java.io.IOException;
 
 import com.robert.kafka.kclient.core.AdaKafkaConsumer;
+import com.robert.kafka.kclient.messageExecuteHandle.AbstractMessageExecuteHandle;
+import com.robert.kafka.kclient.messageExecuteHandle.AsyncMessageExecuteHandle;
+import com.robert.kafka.kclient.messageExecuteHandle.SyncMessageExecuteHandle;
 
 /**
  * Sample for use {@link AdaKafkaConsumer} with Java API.
@@ -17,7 +20,15 @@ public class KafkaConsumerSample {
 	public static void main(String[] args) {
 		DogHandler mbe = new DogHandler();
 
-		AdaKafkaConsumer adaKafkaConsumer = new AdaKafkaConsumer("kafka-consumer.properties", "test", 5, mbe);
+		//同步消费 Kafka消息
+		AbstractMessageExecuteHandle syncMessageExecuteHandle = new SyncMessageExecuteHandle("test",mbe);
+
+		//异步消费 Kafka消息
+		AbstractMessageExecuteHandle asyncMessageExecuteHandle = new AsyncMessageExecuteHandle("test",mbe,5);
+
+		AdaKafkaConsumer adaKafkaConsumer = new AdaKafkaConsumer("kafka-consumer.properties",asyncMessageExecuteHandle);
+
+
 		try {
 			adaKafkaConsumer.startup();
 

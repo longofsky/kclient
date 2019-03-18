@@ -10,8 +10,11 @@
 
 	<bean name="consumer" class="com.robert.kafka.kclient.core.AdaKafkaConsumer" init-method="init">
 		<property name="propertiesFile" value="kafka-consumer.properties" />
-		<property name="topic" value="test" />
-		<property name="streamNum" value="1" />
-		<property name="handler" ref="dogHandler" />
+	</bean>
+
+	<bean id="abstractMessageExecuteHandle" class="com.robert.kafka.kclient.messageExecuteHandle.SyncMessageExecuteHandle">
+
+		<constructor-arg index="0" value="test"/>
+		<constructor-arg index="1" ref="dogHandler"/>
 	</bean>
 </beans>

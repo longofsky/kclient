@@ -17,5 +17,5 @@ import java.util.Properties;
  */
 public interface MessageExecuteHandle {
 
-    public void execute(KafkaConsumer<String, String> consumer, MessageHandler handler, Properties properties);
+    public void execute();
 }
