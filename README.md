@@ -1,4 +1,6 @@
-# Kafka客户端(KClient)
+# Kafka客户端(adachina-mqKafka)
+
+基于KClient实现的adachina-mqKafka Kafka客户端依赖 Kafka版本1.1.0
 
 KClient是一个简单易用，有效集成，高性能，高稳定的Kafka Java客户端。
 
@@ -8,7 +10,7 @@ KClient是一个简单易用，有效集成，高性能，高稳定的Kafka Java
 
 消息队列在互联网领域里得到了广泛的应用，它多应用在异步处理，模块之间的解偶和高并发的消峰等场景，消息队列中表现最好的当属Apache开源项目Kafka，Kafka使用支持高并发的Scala语言开发，利用操作系统的缓存原理达到高性能，并且天生具有可分区，分布式的特点，而且有不同语言的客户端，使用起来非常的方便。KClient提供了一个简单易用，有效集成，高性能，高稳定的Kafka Java客户端。
 
-在继续介绍KClient的功能特性，使用方法和架构设计之前,读者需要对Kafka进行基本的学习和了解。如果你是Kafka的初学者或者从未接触过Kafka，请参考我的博客文章：[Kafka的那些事儿](http://cloudate.net/?p=1763)。如果你英文还不错，也可以直接参考Kafka官方在线文档：[Kafka 0.8.2 Documentation](kafka.apache.org/documentation.html)。
+在继续介绍KClient的功能特性，使用方法和架构设计之前,读者需要对Kafka进行基本的学习和了解。如果你是Kafka的初学者或者从未接触过Kafka，请参考我的博客文章：[Kafka的那些事儿](http://cloudate.net/?p=1763)。如果你英文还不错，也可以直接参考Kafka官方在线文档：[Kafka 1.1.0 Documentation](kafka.apache.org/documentation.html)。
 
 ## 功能特性
 
@@ -16,19 +18,20 @@ KClient是一个简单易用，有效集成，高性能，高稳定的Kafka Java
 
 简化了Kafka客户端API的使用方法, 特别是对消费端开发，消费端开发者只需要实现MessageHandler接口或者相关子类，在实现中处理消息完成业务逻辑，并且在主线程中启动封装的消费端服务器即可。它提供了各种常用的MessageHandler，框架自动转换消息到领域对象模型或者JSON对象等数据结构，让开发者更专注于业务处理。如果使用服务源码注解的方式声明消息处理机的后台，可以将一个通用的服务方法直接转变成具有完善功能的处理Kafka消息队列的处理机，使用起来极其简单，代码看起来一目了然，在框架级别通过多种线程池技术保证了处理机的高性能。
 
-在使用方面，它提供了多种使用方式：1. 直接使用Java API; 2. 与Spring环境无缝集成; 3. 服务源码注解，通过注解声明方式启动Kafka消息队列的处理机。除此之外，它基于注解提供了消息处理机的模板项目，可以根据模板项目通过配置快速开发Kafka的消息处理机。
+在使用方面，它提供了多种使用方式：1. 直接使用Java API; 2. 与Spring环境无缝集成; 3. 服务源码注解，通过注解声明方式启动Kafka消息队列的处理机（爱达kafka客户端的此处等完善）。除此之外，它基于springBoot提供了 爱达kafka客户端的 生产者demo和消费者demo。
  
 **2.高性能**
 
-为了在不同的业务场景下实现高性能, 它提供不同的线程模型： 1. 适合轻量级服务的同步线程模型; 2. 适合IO密集型服务的异步线程模型（细分为所有消费者流共享线程池和每个流独享线程池）。另外，异步模型中的线程池也支持确定数量线程的线程池和线程数量可伸缩的线程池。
+为了在不同的业务场景下实现高性能, 它提供不同的线程模型： 1. 适合轻量级服务的同步线程模型; 2. 适合IO密集型服务的异步线程模型（细分为多线程共享线程池和每个线程独享线程池）。另外，异步模型中的线程池也支持确定数量线程的线程池和线程数量可伸缩的线程池。
 
 **3.高稳定性**
 
-框架级别处理了通用的异常，计入错误日志，可用于错误手工恢复或者洗数据，并实现了优雅关机和重启等功能。
-
+1).框架级别处理了通用的异常，计入错误日志，可用于错误手工恢复或者洗数据，并实现了优雅关机和重启等功能。
+2).生产者发送消息异常记录
+3).消费者拉取消息，处理消息，偏移量提交过程跟踪以及异常记录处理
 ## 使用指南
 
-KClient提供了三种使用方法，对于每一种方法，按照下面的步骤可快速构建Kafka生产者和消费者程序。
+KClient提供了两种使用方法，对于每一种方法，按照下面的步骤可快速构建Kafka生产者和消费者程序。
 
 **前置步骤**
 
@@ -40,13 +43,13 @@ KClient提供了三种使用方法，对于每一种方法，按照下面的步�
 
 ```xml
 <dependency>
-	<groupId>com.robert.kafka</groupId>
-	<artifactId>kclient-core</artifactId>
-	<version>0.0.1</version>
+	<groupId>com.adachina.mqKafka</groupId>
+    	<artifactId>adachina-mqKafka</artifactId>
+    	<version>0.0.1</version>
 </dependency>
 ```
 
-3).根据[Kafka官方文档](http://kafka.apache.org/documentation.html)搭建Kafka环境，并创建两个Topic， test1和test2。
+3).根据[Kafka官方文档](http://kafka.apache.org/documentation.html)搭建Kafka环境，并创建两个Topic， test
 
 4).然后，从Kafka安装目录的config目录下拷贝kafka-consumer.properties和kafka-producer.properties到你的项目类路径下，通常是src/main/resources目录。
 
@@ -57,7 +60,7 @@ Java API提供了最直接，最简单的使用KClient的方法。
 *构建Producer示例：*
 
 ```java
-KafkaProducer adaKafkaProducer = new KafkaProducer("kafka-producer.properties", "test");
+AdaKafkaProducer adaKafkaProducer = new AdaKafkaProducer("kafka-producer.properties", "test");
 
 for (int i = 0; i < 10; i++) {
 	Dog dog = new Dog();
@@ -74,20 +77,29 @@ for (int i = 0; i < 10; i++) {
 *构建Consumer示例：*
 
 ```java
-DogHandler mbe = new DogHandler();
+    DogHandler mbe = new DogHandler();
 
-KafkaConsumer adaKafkaConsumer = new KafkaConsumer("kafka-consumer.properties", "test", 1, mbe);
-try {
-	adaKafkaConsumer.startup();
+    //同步消费 Kafka消息
+	AbstractMessageExecuteHandle syncMessageExecuteHandle = new SyncMessageExecuteHandle("test",mbe);
+
+	//异步消费 Kafka消息
+	AbstractMessageExecuteHandle asyncMessageExecuteHandle = new AsyncMessageExecuteHandle("test",mbe,5);
+
+	AdaKafkaConsumer adaKafkaConsumer = new AdaKafkaConsumer("kafka-consumer.properties",asyncMessageExecuteHandle);
+
 
 	try {
-		System.in.read();
-	} catch (IOException e) {
-		e.printStackTrace();
+	    adaKafkaConsumer.startup();
+	    try {
+	        System.in.read();
+	        System.out.println("Read the exit command.");
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	} finally {
+	    System.out.println("Start to exit...");
+	    adaKafkaConsumer.shutdownGracefully();
 	}
-} finally {
-	adaKafkaConsumer.shutdownGracefully();
-}
  ```
  
 ```java
@@ -109,24 +121,24 @@ KClient可以与Spring环境无缝集成，你可以像使用Spring Bean一样�
 *构建Producer示例：*
 
 ```java
-ApplicationContext ac = new ClassPathXmlApplicationContext("kafka-producer.xml");
+        ApplicationContext ac = new ClassPathXmlApplicationContext("kafka-producer.xml");
 
-KafkaProducer adaKafkaProducer = (KafkaProducer) ac.getBean("producer");
+		AdaKafkaProducer adaKafkaProducer = (AdaKafkaProducer) ac.getBean("producer");
 
-for (int i = 0; i < 10; i++) {
-	Dog dog = new Dog();
-	dog.setName("Yours " + i);
-	dog.setId(i);
-	adaKafkaProducer.send2Topic("test", JSON.toJSONString(dog));
+		for (int i = 0; i < 10; i++) {
+			Dog dog = new Dog();
+			dog.setName("Yours " + i);
+			dog.setId(i);
+			adaKafkaProducer.send("test", JSON.toJSONString(dog));
 
-	System.out.format("Sending dog: %d \n", i + 1);
+			System.out.format("Sending dog: %d \n", i + 1);
 
-	Thread.sleep(100);
-}
+			Thread.sleep(100);
+		}
 ```
 
 ```xml
-<bean name="producer" class="com.robert.kafka.kclient.core.AdaKafkaProducer" init-method="init">
+<bean name="producer" class="AdaKafkaProducer" init-method="init">
 	<property name="propertiesFile" value="kafka-producer.properties"/>
 	<property name="defaultTopic" value="test"/>
 </bean>
@@ -135,21 +147,20 @@ for (int i = 0; i < 10; i++) {
 *构建Consumer示例：*
 
 ```java
-ApplicationContext ac = new ClassPathXmlApplicationContext(
-		"kafka-consumer.xml");
+        ApplicationContext ac = new ClassPathXmlApplicationContext("kafka-consumer.xml");
 
-KafkaConsumer adaKafkaConsumer = (KafkaConsumer) ac.getBean("consumer");
-try {
-	adaKafkaConsumer.startup();
+		AdaKafkaConsumer adaKafkaConsumer = (AdaKafkaConsumer) ac.getBean("consumer");
+		try {
+			adaKafkaConsumer.startup();
 
-	try {
-		System.in.read();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-} finally {
-	adaKafkaConsumer.shutdownGracefully();
-}
+			try {
+				System.in.read();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} finally {
+			adaKafkaConsumer.shutdownGracefully();
+		}
  ```
  
 ```java
@@ -165,69 +176,78 @@ public class DogHandler extends BeanMessageHandler<Dog> {
 ``` 
  
 ```xml
-<bean name="dogHandler" class="com.robert.kafka.kclient.sample.api.DogHandler" />
+    <bean name="dogHandler" class="com.adachina.mqKafka.sample.api.DogHandler" />
 
-<bean name="consumer" class="com.robert.kafka.kclient.core.AdaKafkaConsumer" init-method="init">
-	<property name="propertiesFile" value="kafka-consumer.properties" />
-	<property name="topic" value="test" />
-	<property name="streamNum" value="1" />
-	<property name="handler" ref="dogHandler" />
-</bean>
+	<bean name="consumer" class="com.adachina.mqKafka.core.AdaKafkaConsumer" init-method="init">
+		<property name="propertiesFile" value="kafka-consumer.properties" />
+	</bean>
+
+	<bean id="abstractMessageExecuteHandle" class="com.adachina.mqKafka.messageExecuteHandle.SyncMessageExecuteHandle">
+
+		<constructor-arg index="0" value="test"/>
+		<constructor-arg index="1" ref="dogHandler"/>
+	</bean>
 ```
  
-**3.服务源码注解**
+**3.springboot**
 
-KClient提供了类似Spring声明式的编程方法，使用注解声明Kafka处理器方法，所有的线程模型、异常处理、服务启动和关闭等都由后台服务自动完成，极大程度的简化了API的使用方法，提高了开发者的工作效率。
-
-*注解声明Kafka消息处理器：*
+*构建Producer示例：*
 
 ```java
-@KafkaHandlers
-public class AnnotatedDogHandler {
-	@InputConsumer(propertiesFile = "kafka-consumer.properties", topic = "test", streamNum = 1)
-	@OutputProducer(propertiesFile = "kafka-producer.properties", defaultTopic = "test1")
-	public Cat dogHandler(Dog dog) {
-		System.out.println("Annotated dogHandler handles: " + dog);
+    @Bean
+	public AdaKafkaProducer getAdaKafkaConsumer() {
 
-		return new Cat(dog);
+		return new AdaKafkaProducer("kafka-producer.properties", "test");
 	}
 
-	@InputConsumer(propertiesFile = "kafka-consumer.properties", topic = "test1", streamNum = 1)
-	public void catHandler(Cat cat) throws IOException {
-		System.out.println("Annotated catHandler handles: " + cat);
+	public static void main(String[] args) {
+		ApplicationContext ctxBackend = SpringApplication.run(ProducerApplication.class, args);
 
-		throw new IOException("Man made exception.");
-	}
+		String startupTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date(ctxBackend.getStartupDate()));
+		log.info("KClient application starts at: " + startupTime);
 
-	@ErrorHandler(exception = IOException.class, topic = "test1")
-	public void ioExceptionHandler(IOException e, String message) {
-		System.out.println("Annotated excepHandler handles: " + e);
 	}
-}
 ```
+*构建Consumer示例：*
 
-*注解启动程序：*
-
-```java
-public static void main(String[] args) {
-	ApplicationContext ac = new ClassPathXmlApplicationContext(
-			"annotated-kafka-consumer.xml");
-
-	try {
-		System.in.read();
-	} catch (IOException e) {
-		e.printStackTrace();
+    @Bean
+	public DogHandler getDogHandler() {
+		return new DogHandler();
 	}
-}
-```
 
-*注解Spring环境配置：*
+	@Bean
+	public AbstractMessageExecuteHandle getAbstractMessageExecuteHandle(DogHandler bean) {
 
-```xml
-<bean name="kClientBoot" class="com.robert.kafka.kclient.boot.KClientBoot" init-method="init"/>
+		/**
+		 *同步线性消费
+		 */
+		return new SyncMessageExecuteHandle("test",bean);
+		/**
+		 *异步多线程消费
+		 */
+//		return new AsyncMessageExecuteHandle("test",bean,5);
+	}
 
-<context:component-scan base-package="com.robert.kafka.kclient.sample.annotation" />
-```
+	@Bean
+	public AdaKafkaConsumer getAdaKafkaConsumer(AbstractMessageExecuteHandle bean) {
+
+		return new AdaKafkaConsumer("kafka-consumer.properties",bean);
+	}
+
+	public static void main(String[] args) {
+		ApplicationContext ctxBackend = SpringApplication.run(ConsumerApplication.class, args);
+
+		String startupTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date(ctxBackend.getStartupDate()));
+		log.info("KClient application starts at: " + startupTime);
+
+		try {
+			ctxBackend.getBean(AdaKafkaConsumer.class).startup();
+
+		} finally {
+			System.out.println("Start to exit...");
+			ctxBackend.getBean(AdaKafkaConsumer.class).shutdownGracefully();
+		}
+	}
 
 ## API简介
 
@@ -238,40 +258,38 @@ KafkaProducer类提供了丰富的API来发送不同类型的消息，它支持�
 *发送字符串消息:*
 
 ```java
-public void send(String message);
-public void send2Topic(String topicName, String message); 
-public void send(String key, String message); 
-public void send2Topic(String topicName, String key, String message); 
-public void send(Collection<String> messages); 
-public void send2Topic(String topicName, Collection<String> messages); 
-public void send(Map<String, String> messages); 
-public void send2Topic(String topicName, Map<String, String> messages); 
+
+public Future<RecordMetadata> send2Topic(String topic, Integer partition, Long timestamp, String key, String value, Iterable<Header> headers) 
+public Future<RecordMetadata> send(String message) 
+public Future<RecordMetadata> send(String topic,String message)
+public Future<RecordMetadata> send(Integer partition,String message)
+public Future<RecordMetadata> send(String topic, Integer partition,String message) 
+public Future<RecordMetadata> send(String topic, String key,String message)
+public Future<RecordMetadata> send(String topic, Integer partition, String key,String message)
+public Future<RecordMetadata> send(String topic, Integer partition, Long timestamp, String key,String message)
 ```
 
 *发送Bean消息:*
 
 ```java
-public <T> void sendBean(T bean); 
-public <T> void sendBean2Topic(String topicName, T bean); 
-public <T> void sendBean(String key, T bean); 
-public <T> void sendBean2Topic(String topicName, String key, T bean); 
-public <T> void sendBeans(Collection<T> beans); 
-public <T> void sendBeans2Topic(String topicName, Collection<T> beans); 
-public <T> void sendBeans(Map<String, T> beans); 
-public <T> void sendBeans2Topic(String topicName, Map<String, T> beans);
+public <T> Future<RecordMetadata> sendBean(T bean)
+public <T> Future<RecordMetadata> sendBean2Topic(String topicName, T bean)
+public <T> Future<RecordMetadata> sendBean(String key, T bean)
+public <T> Future<RecordMetadata> sendBean(Integer partition, T bean)
+public <T> Future<RecordMetadata> sendBean2Topic(String topicName, Integer partition, T bean)
+public <T> Future<RecordMetadata> sendBean2Topic(String topicName, Integer partition, String key, T bean)
 ```
 
 *发送JSON对象消息:*
 
 ```java
-public void sendObject(JSONObject jsonObject); 
-public void sendObject2Topic(String topicName, JSONObject jsonObject); 
-public void sendObject(String key, JSONObject jsonObject); 
-public void sendObject2Topic(String topicName, String key, JSONObject jsonObject); 
-public void sendObjects(JSONArray jsonArray); 
-public void sendObjects2Topic(String topicName, JSONArray jsonArray); 
-public void sendObjects(Map<String, JSONObject> jsonObjects); 
-public void sendObjects2Topic(String topicName, Map<String, JSONObject> jsonObjects); 
+public Future<RecordMetadata> sendObject(JSONObject jsonObject)
+public Future<RecordMetadata> sendObject2Topic(String topicName, JSONObject jsonObject)
+public Future<RecordMetadata> sendObject(String key, JSONObject jsonObject)
+public Future<RecordMetadata> sendObject(Integer partition, JSONObject jsonObject)
+public Future<RecordMetadata> sendObject2Topic(String topicName, Integer partition, String key, JSONObject jsonObject)
+public Future<RecordMetadata> sendObjects(JSONArray jsonArray)
+public Future<RecordMetadata> sendObjects2Topic(String topicName, JSONArray jsonArray)
 ```
 
 **2.Consumer API**
@@ -281,21 +299,31 @@ KafkaConsumer类提供了丰富的构造函数用来指定Kafka消费者服务�
 *使用PROPERTIES文件初始化:*
 
 ```java
-public KafkaConsumer(String propertiesFile, String topic, int streamNum, MessageHandler handler);
-public KafkaConsumer(String propertiesFile, String topic, int streamNum, int fixedThreadNum, MessageHandler handler);
-public KafkaConsumer(String propertiesFile, String topic, int streamNum, int fixedThreadNum, boolean isSharedThreadPool, MessageHandler handler);
-public KafkaConsumer(String propertiesFile, String topic, int streamNum, int minThreadNum, int maxThreadNum, MessageHandler handler);
-public KafkaConsumer(String propertiesFile, String topic, int streamNum, int minThreadNum, int maxThreadNum, boolean isSharedThreadPool,MessageHandler handler);
+
+public AdaKafkaConsumer(Properties properties,AbstractMessageExecuteHandle abstractMessageExecuteHandle)
 ```
 
 *使用PROPERTIES对象初始化:* 
 
 ```java
-public KafkaConsumer(Properties properties, String topic, int streamNum, MessageHandler handler);
-public KafkaConsumer(Properties properties, String topic, int streamNum, int fixedThreadNum, MessageHandler handler);
-public KafkaConsumer(Properties properties, String topic, int streamNum, int fixedThreadNum, boolean isSharedThreadPool, MessageHandler handler);
-public KafkaConsumer(Properties properties, String topic, int streamNum, int minThreadNum, int maxThreadNum, MessageHandler handler);
-public KafkaConsumer(Properties properties, String topic, int streamNum, int minThreadNum, int maxThreadNum, boolean isSharedThreadPool,MessageHandler handler);
+public AdaKafkaConsumer(String propertiesFile,AbstractMessageExecuteHandle abstractMessageExecuteHandle)
+```
+
+*SyncMessageExecuteHandle extends AbstractMessageExecuteHandle* 
+```java
+public SyncMessageExecuteHandle(String topic, MessageHandler handler) {
+    super(topic,handler);
+}
+```
+
+*AsyncMessageExecuteHandle extends AbstractMessageExecuteHandle* 
+```java
+public AsyncMessageExecuteHandle(String topic,MessageHandler handler)
+public AsyncMessageExecuteHandle(String topic, MessageHandler handler, int streamNum)
+public AsyncMessageExecuteHandle(String topic, MessageHandler handler, int streamNum, int fixedThreadNum) 
+public AsyncMessageExecuteHandle(String topic, MessageHandler handler, int streamNum, int fixedThreadNum, boolean isAsyncThreadModel)
+public AsyncMessageExecuteHandle(String topic, MessageHandler handler, int streamNum, int minThreadNum, int maxThreadNum)
+public AsyncMessageExecuteHandle(String topic, MessageHandler handler, int streamNum, int minThreadNum, int maxThreadNum, boolean isSharedAsyncThreadPool)
 ```
 
 **3.消息处理器**
@@ -360,107 +388,116 @@ public abstract class ObjectMessageHandler extends SafelyMessageHandler {...}
 public abstract class ObjectsMessageHandler extends SafelyMessageHandler {...}
 ```
 
-**4.消息处理器注解**
-
-正如上面使用指南第三部分服务源码注解所讲述的那样，KClient可以通过注解来声明Kafka消息处理器，KClient提供了@KafkaHandlers、@InputConsumer、@OutputProducer和@ErrorHandler等注解。
-
-*@KafkaHandlers:*
-
-```java
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Component
-public @interface KafkaHandlers {
-}
-```
-
-*@InputConsumer:*
-
-```java
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface InputConsumer {
-	String propertiesFile() default "";
-
-	String topic() default "";
-
-	int streamNum() default 1;
-
-	int fixedThreadNum() default 0;
-
-	int minThreadNum() default 0;
-
-	int maxThreadNum() default 0;
-}
-```
-
-*@OutputProducer:*
-
-```java
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface OutputProducer {
-	String propertiesFile() default "";
-
-	String defaultTopic() default "";
-}
-```
-
-*@ErrorHandler:*
-
-```java
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ErrorHandler {
-	Class<? extends Throwable> exception() default Throwable.class;
-
-	String topic() default "";
-}
-```
-
 ## 消息处理机模板项目
 
-### 快速开发向导
+### 生产者快速开发向导
 
-通过下面步骤可以快速开发Kafka处理机服务。
+通过下面步骤可以快速开发Kafka 生产者服务。
 
-1.从本项目下载kclient-processor项目模板，并且根据业务需要修改pom.xml后导入Eclipse。
+1.从本项目下载adachina-mqkafka-procuderDemo项目模板，并且根据业务需要修改pom.xml后导入idea。
 
-2.根据业务需要更改`com.robert.kclient.app.handler.AnimalsHandler`类名称，并且根据业务需要修改处理器的注解。这里，可以导入业务服务对消息进行处理。
+2.根据业务需要更改 消息实体类
 
+*启动项目入口类*
 ```java
-@KafkaHandlers
-public class AnimalsHandler {
-	@InputConsumer(propertiesFile = "kafka-consumer.properties", topic = "test", streamNum = 1)
-	@OutputProducer(propertiesFile = "kafka-producer.properties", defaultTopic = "test1")
-	public Cat dogHandler(Dog dog) {
-		System.out.println("Annotated dogHandler handles: " + dog);
+    @Bean
+	public AdaKafkaProducer getAdaKafkaConsumer() {
 
-		return new Cat(dog);
+		return new AdaKafkaProducer("kafka-producer.properties", "test");
 	}
 
-	@InputConsumer(propertiesFile = "kafka-consumer.properties", topic = "test1", streamNum = 1)
-	public void catHandler(Cat cat) throws IOException {
-		System.out.println("Annotated catHandler handles: " + cat);
+	public static void main(String[] args) {
+		ApplicationContext ctxBackend = SpringApplication.run(ProducerApplication.class, args);
 
-		throw new IOException("Man made exception.");
-	}
+		String startupTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date(ctxBackend.getStartupDate()));
+		log.info("KClient application starts at: " + startupTime);
 
-	@ErrorHandler(exception = IOException.class, topic = "test1")
-	public void ioExceptionHandler(IOException e, String message) {
-		System.out.println("Annotated excepHandler handles: " + e);
 	}
-}
 ``` 
+*消息发送逻辑*
+```java
+
+    @RequestMapping("/send")
+	public String send() {
+		for (int i = 0; i < 10; i++) {
+			Dog dog = new Dog();
+			dog.setName("Yours " + i);
+			dog.setId(i);
+			Future<RecordMetadata> future =  producer.sendBean2Topic("test", dog);
+
+			System.out.format(future.toString()+"++++++++++Sending dog: %d \n", i + 1);
+
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return "Sending dog:10";
+	}
+```
 3.通过`mvn package`既可以打包包含Spring Boot功能的自启动jar包。
 
-4.通过`java -jar kclient-processor.jar`即可启动服务。
+4.通过`adachina-mqkafka-procuderDem.jar`即可启动服务。
 
-### 后台监控和管理
+### 消费者快速开发向导
+
+通过下面步骤可以快速开发Kafka 消费者服务。
+
+1.从本项目下载adachina-mqkafka-consumerDemo项目模板，并且根据业务需要修改pom.xml后导入idea。
+
+2.根据业务需要更改 消息实体类
+
+*启动项目入口类*
+```java
+        @Bean
+    	public DogHandler getDogHandler() {
+    		return new DogHandler();
+    	}
+    
+    	@Bean
+    	public AbstractMessageExecuteHandle getAbstractMessageExecuteHandle(DogHandler bean) {
+    
+    		/**
+    		 *同步线性消费
+    		 */
+    		return new SyncMessageExecuteHandle("test",bean);
+    		/**
+    		 *异步多线程消费
+    		 */
+    //		return new AsyncMessageExecuteHandle("test",bean,5);
+    	}
+    
+    	@Bean
+    	public AdaKafkaConsumer getAdaKafkaConsumer(AbstractMessageExecuteHandle bean) {
+    
+    		return new AdaKafkaConsumer("kafka-consumer.properties",bean);
+    	}
+    
+    	public static void main(String[] args) {
+    		ApplicationContext ctxBackend = SpringApplication.run(ConsumerApplication.class, args);
+    
+    		String startupTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date(ctxBackend.getStartupDate()));
+    		log.info("KClient application starts at: " + startupTime);
+    
+    		try {
+    			ctxBackend.getBean(AdaKafkaConsumer.class).startup();
+    
+    		} finally {
+    			System.out.println("Start to exit...");
+    			ctxBackend.getBean(AdaKafkaConsumer.class).shutdownGracefully();
+    		}
+    	}
+``` 
+*消息发送逻辑*
+
+    应用启动自动消费对应topic下的消息
+3.通过`mvn package`既可以打包包含Spring Boot功能的自启动jar包。
+
+4.通过`adachina-mqkafka-consumerDemo.jar`即可启动服务。
+
+### 消费端后台监控和管理
 
 KClient模板项目提供了后台管理接口来监控和管理消息处理服务。
 
@@ -536,10 +573,4 @@ Benchmark应该覆盖推送QPS，接收处理QPS以及单线程和多线程生�
 5. 实现消息发送端的可靠投递，在发送超时的时候，持久到数据库或者缓存，定时补偿发送，也就是实现Producer可以持久消息到数据库，有问题的时候，异步定时重发
 6. InputConsumer和OutputProducer中的propertiesFile有些多余，我们需要把它迁移到KafkaHandlers中，或者支持多个地方配置，或者支持具体每个属性在方法中的配置。
 7. InterruptedException和优雅关机的实现，优化关机的实现还不健全，it.hasNext()退出后，最后一个chunk没有被提交, Kafka0.8版本提交默认是30秒一次的,读出来没提交很正常
-
-## 获得技术支持
-
-联系作者：robert_lyp
-
-<a href="./resource/images/myqrcode.jpeg"><img src="./resource/images/myqrcode.jpeg" alt="cloudate-qrcode" width="150" height="190" class="alignnone size-full wp-image-1138" /></a>
-
+8. 生产者消费者异常记录以及重视逻辑待完成

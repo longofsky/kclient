@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<bean name="dogHandler" class="com.adachina.mqKafka.sample.api.DogHandler" />
+
+	<bean name="consumer" class="com.adachina.mqKafka.core.AdaKafkaConsumer" init-method="init">
+		<property name="propertiesFile" value="kafka-consumer.properties" />
+	</bean>
+
+	<bean id="abstractMessageExecuteHandle" class="com.adachina.mqKafka.messageExecuteHandle.SyncMessageExecuteHandle">
+
+		<constructor-arg index="0" value="test"/>
+		<constructor-arg index="1" ref="dogHandler"/>
+	</bean>
+</beans>
